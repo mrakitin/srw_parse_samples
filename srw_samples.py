@@ -55,20 +55,14 @@ def SRWLOptSample(image_data, limit_value, nx, ny, resolution, thickness, delta,
     opT = srwlib.SRWLOptT(nx, ny, rx, ry, None, 1, fx, fy, xc, yc, ne, e_start, e_fin)
 
     # Same data alignment as for wavefront: outmost loop vs y, inmost loop vs e
-    hx = rx / (nx - 1)
-    hy = ry / (ny - 1)
     ofst = 0
-    y = -0.5 * ry  # the image is always centered on the grid, however grid can be shifted
     for iy in range(ny):
-        x = -0.5 * rx
         for ix in range(nx):
             for ie in range(ne):
                 pathInBody = thickness * image_data[ix, iy] / limit_value
                 opT.arTr[ofst] = math.exp(-0.5 * pathInBody / atten_len)  # amplitude transmission
                 opT.arTr[ofst + 1] = -delta * pathInBody  # optical path difference
                 ofst += 2
-            x += hx
-        y += hy
 
     opT.input_parms = input_parms
 
@@ -104,6 +98,8 @@ def read_image(tiff_path, bottom_limit=None, show_images=False):
     # Remove background noise:
     idxs_less = np.where(data < limit_value * 0.5)
     data[idxs_less] = np.uint16(0)
+    # idxs_more = np.where(data >= limit_value * 0.5)
+    # data[idxs_more] = np.uint16(255)
 
     # Generate new image object to track the changes:
     new_image = Image.fromarray(np.transpose(data))
@@ -152,9 +148,9 @@ if __name__ == '__main__':
     nx = d['data'].shape[0]
     ny = d['data'].shape[1]
     resolution = resolutions[tiff_name] * 1e-9  # [m/pixel]
-    # thickness = 100e-9
-    # thickness = 1e-6
-    thickness = 10e-6
+    # thickness = 100e-9  # [m]
+    # thickness = 1e-6  # [m]
+    thickness = 10e-6  # [m]
     # material = 'Au'
     delta = 3.23075074E-05  # for Au at 9646 eV
     atten_len = 4.06544e-6  # [m] for Au at 9646 eV
