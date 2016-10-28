@@ -3,7 +3,7 @@ import os
 import srwl_bl
 import srwlib
 import srwlpy
-import srw_samples
+import srwl_samples
 
 def set_optics(v=None):
     el = []
@@ -29,12 +29,13 @@ def set_optics(v=None):
     tiff_name = 'H5R5.tif'
     tiff_path = os.path.join(images_dir, tiff_name)
 
-    d = srw_samples.read_image(tiff_path, show_images=False)
+    d = srwl_samples.read_image(tiff_path, show_images=True)
 
     # SRW part:
     nx = d['data'].shape[0]
     ny = d['data'].shape[1]
-    resolution = resolutions[tiff_name] * 1e-9  # [m/pixel]
+    # TODO: change resolution back to 1e-9 [m/pixel] and play with the beam size:
+    resolution = resolutions[tiff_name] * 1e-7  # [m/pixel]
     # thickness = 100e-9
     # thickness = 1e-6
     thickness = 10e-6  # [m]
@@ -42,15 +43,13 @@ def set_optics(v=None):
     delta = 3.23075074E-05  # for Au at 9646 eV
     atten_len = 4.06544e-6  # [m] for Au at 9646 eV
 
-    el.append(srw_samples.SRWLOptSample(image_data=d['data'], limit_value=d['limit_value'],
-                                        nx=nx, ny=ny, resolution=resolution, thickness=thickness, delta=delta,
-                                        atten_len=atten_len))
+    el.append(srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'],
+                                                 nx=nx, ny=ny, resolution=resolution, thickness=thickness,
+                                                 delta=delta, atten_len=atten_len))
 
     pp = []
     pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
-
-
-    pp.append([0, 0, 1.0, 0, 0, 0.5, 2.0, 0.5, 2.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 2.0, 1.0, 2.0])
     return srwlib.SRWLOptC(el, pp)
 
 

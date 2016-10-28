@@ -13,8 +13,8 @@ import srwlib
 from PIL import Image
 
 
-def SRWLOptSample(image_data, limit_value, nx, ny, resolution, thickness, delta, atten_len, xc=0, yc=0, e_start=0,
-                  e_fin=0):
+def srwl_opt_setup_sample(image_data, limit_value, nx, ny, resolution, thickness, delta, atten_len, xc=0, yc=0,
+                          e_start=0, e_fin=0):
     """Setup Sample element.
 
     :param image_data: data from the provided TIFF file.
@@ -155,6 +155,6 @@ if __name__ == '__main__':
     delta = 3.23075074E-05  # for Au at 9646 eV
     atten_len = 4.06544e-6  # [m] for Au at 9646 eV
 
-    opT = SRWLOptSample(d['data'], d['limit_value'], nx, ny, resolution, thickness, delta, atten_len)
+    opT = srwl_opt_setup_sample(d['data'], d['limit_value'], nx, ny, resolution, thickness, delta, atten_len)
 
     print('')
