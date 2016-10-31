@@ -6,7 +6,6 @@
 #############################################################################
 
 import math
-import os
 
 import numpy as np
 import srwlib
@@ -115,46 +114,3 @@ def read_image(tiff_path, bottom_limit=None, show_images=False):
         'orig_image': orig_image,
         'new_image': new_image,
     }
-
-
-if __name__ == '__main__':
-    # Parameters:
-    images_dir = 'samples'
-    resolutions = {  # [nm / pixel]
-        'H5.tif': 1.417411,
-        'H4.tif': 1.417411,
-        'H3.tif': 1.417411,
-        'R5.tif': 2.480469,
-        'R7.tif': 2.834821,
-        'R10.tif': 3.96875,
-        'R15.tif': 4.960938,
-        'R20.tif': 6.614583,
-        'H5R5.tif': 3.96875,
-        '5rings.npy': 10,
-        '7rings.npy': 10,
-        '10rings.npy': 10,
-    }
-    tiff_name = 'R5.tif'
-    # tiff_name = 'R7.tif'
-    # tiff_name = 'R10.tif'
-    # tiff_name = 'H5R5.tif'
-    tiff_path = os.path.join(images_dir, tiff_name)
-    # tiff_path = 'C:/bin/mrakitin/tiff_reader/data/xf21id1_cam01_H5_V5_029.tif'
-    show_images = True
-
-    d = read_image(tiff_path, show_images=show_images)
-
-    # SRW part:
-    nx = d['data'].shape[0]
-    ny = d['data'].shape[1]
-    resolution = resolutions[tiff_name] * 1e-9  # [m/pixel]
-    # thickness = 100e-9  # [m]
-    # thickness = 1e-6  # [m]
-    thickness = 10e-6  # [m]
-    # material = 'Au'
-    delta = 3.23075074E-05  # for Au at 9646 eV
-    atten_len = 4.06544e-6  # [m] for Au at 9646 eV
-
-    opT = srwl_opt_setup_sample(d['data'], d['limit_value'], nx, ny, resolution, thickness, delta, atten_len)
-
-    print('')

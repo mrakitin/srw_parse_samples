@@ -1,107 +1,165 @@
 #!/usr/bin/env python
+
 import os
+import json
 import srwl_bl
 import srwlib
 import srwlpy
 import srwl_samples
 
+example_folder = 'data_example_SampleCFN_01'  # example data sub-folder name
+if not os.path.isdir(example_folder):
+    os.mkdir(example_folder)
+
 def set_optics(v=None):
     el = []
-    # Parameters:
-    images_dir = 'data_example_SampleCFN_01'
-    resolutions = {  # [nm / pixel]
-        'H5.tif': 1.417411,
-        'H4.tif': 1.417411,
-        'H3.tif': 1.417411,
-        'R5.tif': 2.480469,
-        'R7.tif': 2.834821,
-        'R10.tif': 3.96875,
-        'R15.tif': 4.960938,
-        'R20.tif': 6.614583,
-        'H5R5.tif': 3.96875,
-        '5rings.npy': 10,
-        '7rings.npy': 10,
-        '10rings.npy': 10,
-    }
-    # tiff_name = 'R5.tif'
-    # tiff_name = 'R7.tif'
-    # tiff_name = 'R10.tif'
-    tiff_name = 'H5R5.tif'
-    tiff_path = os.path.join(images_dir, tiff_name)
+    el.append(srwlib.SRWLOptA("r", "a", 0.0002, 0.001, 0.0, 0.0))
+    el.append(srwlib.SRWLOptD(6.9))
 
-    d = srwl_samples.read_image(tiff_path, show_images=True)
+    ifnMirror1 = "mirror_1d.dat"
+    if ifnMirror1 and os.path.isfile(ifnMirror1):
+        hProfDataMirror1 = srwlib.srwl_uti_read_data_cols(ifnMirror1, "\t", 0, 1)
+        el.append(srwlib.srwl_opt_setup_surf_height_1d(hProfDataMirror1, _dim="x", _ang=0.0031415926, _amp_coef=1.0, _size_x=0.00094, _size_y=0.001))
+    el.append(srwlib.SRWLOptD(2.5))
+    el.append(srwlib.SRWLOptA("r", "a", 0.0002, 0.001, 0.0, 0.0))
+    el.append(srwlib.SRWLOptD(4.4))
+    el.append(srwlib.SRWLOptA("r", "a", 5e-05, 0.001, 0.0, 0.0))
+    el.append(srwlib.SRWLOptD(1.1))
+    el.append(srwlib.srwl_opt_setup_CRL(2, 4.20756805e-06, 0.00731294, 1, 0.001, 0.0024, 0.0015, 1, 8e-05, 0, 0))
+    el.append(srwlib.srwl_opt_setup_CRL(2, 4.20756805e-06, 0.00731294, 1, 0.001, 0.0014, 0.0005, 6, 8e-05, 0, 0))
+    el.append(srwlib.SRWLOptD(9.1))
+    el.append(srwlib.SRWLOptA("r", "a", 0.0014, 0.0002, 0.0, 0.0))
+    el.append(srwlib.SRWLOptL(3.24479, 1e+23, 0.0, 0.0))
+    el.append(srwlib.SRWLOptD(3.5))
+    el.append(srwlib.SRWLOptA("r", "a", 1e-05, 1e-05, 0.0, 0.0))
+    el.append(srwlib.SRWLOptD(0.7))
+
+    # Insert Sample from the provided TIFF file:
+    resolutions_file = os.path.join(example_folder, 'resolutions.json')
+    with open(resolutions_file, 'r') as f:
+        resolutions = json.load(f)
+
+    tiff_name = 'R5.tif'
+    tiff_path = os.path.join(example_folder, tiff_name)
+
+    d = srwl_samples.read_image(tiff_path, show_images=False)
 
     # SRW part:
     nx = d['data'].shape[0]
     ny = d['data'].shape[1]
-    # TODO: change resolution back to 1e-9 [m/pixel] and play with the beam size:
-    #resolution = resolutions[tiff_name] * 1e-7  # [m/pixel]
     resolution = resolutions[tiff_name] * 1e-9  # [m/pixel]
-    
     # thickness = 100e-9
     # thickness = 1e-6
     thickness = 10e-6  # [m]
+    # thickness = 50e-6  # [m]
     # material = 'Au'
     delta = 3.23075074E-05  # for Au at 9646 eV
     atten_len = 4.06544e-6  # [m] for Au at 9646 eV
 
-    #el.append(srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'],
-    #                                             nx=nx, ny=ny, resolution=resolution, thickness=thickness,
-    #                                             delta=delta, atten_len=atten_len))
-
-    op_S = srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'], nx=nx, ny=ny, resolution=resolution, thickness=thickness, delta=delta, atten_len=atten_len)
+    op_S = srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'], nx=nx, ny=ny,
+                                              resolution=resolution, thickness=thickness, delta=delta,
+                                              atten_len=atten_len)
     op_D = srwlib.SRWLOptD(4.81)
-
-    #pp = []
-    #pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
-    #pp.append([0, 0, 1.0, 0, 0, 1.0, 4.0, 1.0, 4.0])
-    #return srwlib.SRWLOptC(el, pp)
+    el.append(op_S)
+    # TODO: Uncomment here if you wish to look at the diffraction:
+    # el.append(op_D)
 
     pp_S = [0, 0, 1.0, 0, 0, 1.0, 2.0, 1.0, 2.0]
-    pp_D = [0, 0, 1.0, 3, 0, 1.0, 1.0, 1.0, 1.0]
+    pp_D = [0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0]
 
-    #Wavefront Propagation Parameters:
-    #[0]: Auto-Resize (1) or not (0) Before propagation
-    #[1]: Auto-Resize (1) or not (0) After propagation
-    #[2]: Relative Precision for propagation with Auto-Resizing (1. is nominal)
-    #[3]: Allow (1) or not (0) for semi-analytical treatment of the quadratic (leading) phase terms at the propagation
-    #[4]: Do any Resizing on Fourier side, using FFT, (1) or not (0)
-    #[5]: Horizontal Range modification factor at Resizing (1. means no modification)
-    #[6]: Horizontal Resolution modification factor at Resizing
-    #[7]: Vertical Range modification factor at Resizing
-    #[8]: Vertical Resolution modification factor at Resizing
-    #[9]: Type of wavefront Shift before Resizing (not yet implemented)
-    #[10]: New Horizontal wavefront Center position after Shift (not yet implemented)
-    #[11]: New Vertical wavefront Center position after Shift (not yet implemented)
+    pp = []
+    pp.append([0, 0, 1.0, 0, 0, 2.5, 5.0, 2.5, 5.0])
 
-    return srwlib.SRWLOptC([op_S, op_D], [pp_S, pp_D])
-    #return srwlib.SRWLOptC([op_S], [pp_S])
+    pp.append([0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0])
+    if ifnMirror1 and os.path.isfile(ifnMirror1):
+        pp.append([0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 1, 0, 1.0, 1.0, 1.0, 1.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+
+    # Add samples:
+    pp.append(pp_S)
+    # TODO: Uncomment here if you wish to look at the diffraction:
+    # pp.append(pp_D)
+
+    pp.append([0, 0, 1.0, 0, 0, 0.4, 1.0, 0.4, 1.0])
+
+    return srwlib.SRWLOptC(el, pp)
+
 
 varParam = srwl_bl.srwl_uti_ext_options([
-    ['name', 's', 'Mask example', 'simulation name'],
+    ['name', 's', 'NSLS-II CHX beamline with data_samples from CFN', 'simulation name'],
 
 #---Data Folder
-    ['fdir', 's', '', 'folder (directory) name for reading-in input and saving output data files'],
+    ['fdir', 's', example_folder, 'folder (directory) name for reading-in input and saving output data files'],
 
-    ['gbm_x', 'f', 0.0, 'average horizontal coordinates of waist [m]'],
-    ['gbm_y', 'f', 0.0, 'average vertical coordinates of waist [m]'],
-    ['gbm_z', 'f', 0.0, 'average longitudinal coordinate of waist [m]'],
-    ['gbm_xp', 'f', 0.0, 'average horizontal angle at waist [rad]'],
-    ['gbm_yp', 'f', 0.0, 'average verical angle at waist [rad]'],
-    ['gbm_ave', 'f', 9646, 'average photon energy [eV]'],
-    ['gbm_pen', 'f', 0.001, 'energy per pulse [J]'],
-    ['gbm_rep', 'f', 1, 'rep. rate [Hz]'],
-    ['gbm_pol', 'f', 1, 'polarization 1- lin. hor., 2- lin. vert., 3- lin. 45 deg., 4- lin.135 deg., 5- circ. right, 6- circ. left'],
-    ['gbm_sx', 'f', 3e-06, 'rms beam size vs horizontal position [m] at waist (for intensity)'],
-    ['gbm_sy', 'f', 3e-06, 'rms beam size vs vertical position [m] at waist (for intensity)'],
-    #['gbm_sx', 'f', 50e-06, 'rms beam size vs horizontal position [m] at waist (for intensity)'],
-    #['gbm_sy', 'f', 50e-06, 'rms beam size vs vertical position [m] at waist (for intensity)'],
-    
-    ['gbm_st', 'f', 1e-13, 'rms pulse duration [s] (for intensity)'],
-    ['gbm_mx', 'f', 0, 'transverse Gauss-Hermite mode order in horizontal direction'],
-    ['gbm_my', 'f', 0, 'transverse Gauss-Hermite mode order in vertical direction'],
-    ['gbm_ca', 's', 'c', 'treat _sigX, _sigY as sizes in [m] in coordinate representation (_presCA="c") or as angular divergences in [rad] in angular representation (_presCA="a")'],
-    ['gbm_ft', 's', 't', 'treat _sigT as pulse duration in [s] in time domain/representation (_presFT="t") or as bandwidth in [eV] in frequency domain/representation (_presFT="f")'],
+#---Electron Beam
+    ['ebm_nm', 's', 'NSLS-II Low Beta Day 1', 'standard electron beam name'],
+    ['ebm_nms', 's', '', 'standard electron beam name suffix: e.g. can be Day1, Final'],
+    ['ebm_i', 'f', 0.5, 'electron beam current [A]'],
+    ['ebm_e', 'f', 3.0, 'electron beam avarage energy [GeV]'],
+    ['ebm_de', 'f', 0.0, 'electron beam average energy deviation [GeV]'],
+    ['ebm_x', 'f', 0.0, 'electron beam initial average horizontal position [m]'],
+    ['ebm_y', 'f', 0.0, 'electron beam initial average vertical position [m]'],
+    ['ebm_xp', 'f', 0., 'electron beam initial average horizontal angle [rad]'],
+    ['ebm_yp', 'f', 0., 'electron beam initial average vertical angle [rad]'],
+    ['ebm_z', 'f', 0., 'electron beam initial average longitudinal position [m]'],
+    ['ebm_dr', 'f', -1.54, 'electron beam longitudinal drift [m] to be performed before a required calculation'],
+    ['ebm_ens', 'f', 0.00089, 'electron beam relative energy spread'],
+    ['ebm_emx', 'f', 9e-10, 'electron beam horizontal emittance [m]'],
+    ['ebm_emy', 'f', 8e-12, 'electron beam vertical emittance [m]'],
+    # Definition of the beam through Twiss:
+    ['ebm_betax', 'f', 2.02, 'horizontal beta-function [m]'],
+    ['ebm_betay', 'f', 1.06, 'vertical beta-function [m]'],
+    ['ebm_alphax', 'f', 0.0, 'horizontal alpha-function [rad]'],
+    ['ebm_alphay', 'f', 0.0, 'vertical alpha-function [rad]'],
+    ['ebm_etax', 'f', 0.0, 'horizontal dispersion function [m]'],
+    ['ebm_etay', 'f', 0.0, 'vertical dispersion function [m]'],
+    ['ebm_etaxp', 'f', 0.0, 'horizontal dispersion function derivative [rad]'],
+    ['ebm_etayp', 'f', 0.0, 'vertical dispersion function derivative [rad]'],
+    # Definition of the beam through Moments:
+    ['ebm_sigx', 'f', 4.26380112107e-05, 'horizontal RMS size of electron beam [m]'],
+    ['ebm_sigy', 'f', 2.91204395571e-06, 'vertical RMS size of electron beam [m]'],
+    ['ebm_sigxp', 'f', 2.11079263419e-05, 'horizontal RMS angular divergence of electron beam [rad]'],
+    ['ebm_sigyp', 'f', 2.74721127897e-06, 'vertical RMS angular divergence of electron beam [rad]'],
+    ['ebm_mxxp', 'f', 0.0, 'horizontal position-angle mixed 2nd order moment of electron beam [m]'],
+    ['ebm_myyp', 'f', 0.0, 'vertical position-angle mixed 2nd order moment of electron beam [m]'],
+
+#---Undulator
+    ['und_bx', 'f', 0.0, 'undulator horizontal peak magnetic field [T]'],
+    ['und_by', 'f', 0.83475, 'undulator vertical peak magnetic field [T]'],
+    ['und_phx', 'f', 0.0, 'initial phase of the horizontal magnetic field [rad]'],
+    ['und_phy', 'f', 0.0, 'initial phase of the vertical magnetic field [rad]'],
+    ['und_b2e', '', '', 'estimate undulator fundamental photon energy (in [eV]) for the amplitude of sinusoidal magnetic field defined by und_b or und_bx, und_by', 'store_true'],
+    ['und_e2b', '', '', 'estimate undulator field amplitude (in [T]) for the photon energy defined by w_e', 'store_true'],
+    ['und_per', 'f', 0.02, 'undulator period [m]'],
+    ['und_len', 'f', 3.0, 'undulator length [m]'],
+    ['und_zc', 'f', 0.0, 'undulator center longitudinal position [m]'],
+    ['und_sx', 'i', 1, 'undulator horizontal magnetic field symmetry vs longitudinal position'],
+    ['und_sy', 'i', -1, 'undulator vertical magnetic field symmetry vs longitudinal position'],
+    ['und_g', 'f', 6.72, 'undulator gap [mm] (assumes availability of magnetic measurement or simulation data)'],
+    ['und_ph', 'f', 0.0, 'shift of magnet arrays [mm] for which the field should be set up'],
+    ['und_mdir', 's', '', 'name of magnetic measurements sub-folder'],
+    ['und_mfs', 's', '', 'name of magnetic measurements for different gaps summary file'],
+
 
 #---Calculation Types
     # Electron Trajectory
@@ -180,25 +238,17 @@ varParam = srwl_bl.srwl_uti_ext_options([
     #Multi-Electron (partially-coherent) Wavefront Propagation
     ['wm', '', '', 'calculate multi-electron (/ partially coherent) wavefront propagation', 'store_true'],
 
-    ['w_e', 'f', 9646, 'photon energy [eV] for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_e', 'f', 9646.985, 'photon energy [eV] for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_ef', 'f', -1., 'final photon energy [eV] for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_ne', 'i', 1, 'number of points vs photon energy for calculation of intensity distribution'],
     ['w_x', 'f', 0.0, 'central horizontal position [m] for calculation of intensity distribution'],
-    #['w_rx', 'f', 0.0005, 'range of horizontal position [m] for calculation of intensity distribution'],
-    #['w_rx', 'f', 0.0008, 'range of horizontal position [m] for calculation of intensity distribution'],
-    ['w_rx', 'f', 20e-06, 'range of horizontal position [m] for calculation of intensity distribution'],
-
-    ['w_nx', 'i', 2048, 'number of points vs horizontal position for calculation of intensity distribution'],
+    ['w_rx', 'f', 250e-6, 'range of horizontal position [m] for calculation of intensity distribution'],
+    ['w_nx', 'i', 400, 'number of points vs horizontal position for calculation of intensity distribution'],
     ['w_y', 'f', 0.0, 'central vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
-    #['w_ry', 'f', 0.0005, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
-    #['w_ry', 'f', 0.0008, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
-    ['w_ry', 'f', 20e-06, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
-
-    ['w_ny', 'i', 2048, 'number of points vs vertical position for calculation of intensity distribution'],
-    #['w_smpf', 'f', 3.0, 'sampling factor for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_ry', 'f', 250e-6, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_ny', 'i', 400, 'number of points vs vertical position for calculation of intensity distribution'],
     ['w_smpf', 'f', -1, 'sampling factor for calculation of intensity distribution vs horizontal and vertical position'],
-    
-    ['w_meth', 'i', 2, 'method to use for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_meth', 'i', 1, 'method to use for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_prec', 'f', 0.01, 'relative precision for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_u', 'i', 1, 'electric field units: 0- arbitrary, 1- sqrt(Phot/s/0.1%bw/mm^2), 2- sqrt(J/eV/mm^2) or sqrt(W/mm^2), depending on representation (freq. or time)'],
     ['si_pol', 'i', 6, 'polarization component to extract after calculation of intensity distribution: 0- Linear Horizontal, 1- Linear Vertical, 2- Linear 45 degrees, 3- Linear 135 degrees, 4- Circular Right, 5- Circular Left, 6- Total'],
@@ -210,7 +260,7 @@ varParam = srwl_bl.srwl_uti_ext_options([
     ['ws_fni', 's', 'res_int_pr_se.dat', 'file name for saving propagated single-e intensity distribution vs horizontal and vertical position'],
     ['ws_pl', 's', '', 'plot the resulting intensity distributions in graph(s): ""- dont plot, "x"- vs horizontal position, "y"- vs vertical position, "xy"- vs horizontal and vertical position'],
 
-    ['wm_nm', 'i', 100000, 'number of macro-electrons (coherent wavefronts) for calculation of multi-electron wavefront propagation'],
+    ['wm_nm', 'i', 10, 'number of macro-electrons (coherent wavefronts) for calculation of multi-electron wavefront propagation'],
     ['wm_na', 'i', 5, 'number of macro-electrons (coherent wavefronts) to average on each node for parallel (MPI-based) calculation of multi-electron wavefront propagation'],
     ['wm_ns', 'i', 5, 'saving periodicity (in terms of macro-electrons / coherent wavefronts) for intermediate intensity at multi-electron wavefront propagation calculation'],
     ['wm_ch', 'i', 0, 'type of a characteristic to be extracted after calculation of multi-electron wavefront propagation: #0- intensity (s0); 1- four Stokes components; 2- mutual intensity cut vs x; 3- mutual intensity cut vs y'],
@@ -222,11 +272,10 @@ varParam = srwl_bl.srwl_uti_ext_options([
     ['wm_fni', 's', 'res_int_pr_me.dat', 'file name for saving propagated multi-e intensity distribution vs horizontal and vertical position'],
 
     #to add options
-    #['op_r', 'f', 30.0, 'longitudinal position of the first optical element [m]'],
-    ['op_r', 'f', 1.0, 'longitudinal position of the first optical element [m]'],
+    ['op_r', 'f', 20.5, 'longitudinal position of the first optical element [m]'],
 
     # Former appParam:
-    ['source_type', 's', 'g', 'source type, (u) idealized undulator, (t), tabulated undulator, (m) multipole, (g) gaussian beam'],
+    ['source_type', 's', 'u', 'source type, (u) idealized undulator, (t), tabulated undulator, (m) multipole, (g) gaussian beam'],
 ])
 
 
