@@ -35,7 +35,9 @@ def set_optics(v=None):
     nx = d['data'].shape[0]
     ny = d['data'].shape[1]
     # TODO: change resolution back to 1e-9 [m/pixel] and play with the beam size:
-    resolution = resolutions[tiff_name] * 1e-7  # [m/pixel]
+    #resolution = resolutions[tiff_name] * 1e-7  # [m/pixel]
+    resolution = resolutions[tiff_name] * 1e-9  # [m/pixel]
+    
     # thickness = 100e-9
     # thickness = 1e-6
     thickness = 10e-6  # [m]
@@ -43,15 +45,37 @@ def set_optics(v=None):
     delta = 3.23075074E-05  # for Au at 9646 eV
     atten_len = 4.06544e-6  # [m] for Au at 9646 eV
 
-    el.append(srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'],
-                                                 nx=nx, ny=ny, resolution=resolution, thickness=thickness,
-                                                 delta=delta, atten_len=atten_len))
+    #el.append(srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'],
+    #                                             nx=nx, ny=ny, resolution=resolution, thickness=thickness,
+    #                                             delta=delta, atten_len=atten_len))
 
-    pp = []
-    pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
-    pp.append([0, 0, 1.0, 0, 0, 1.0, 2.0, 1.0, 2.0])
-    return srwlib.SRWLOptC(el, pp)
+    op_S = srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'], nx=nx, ny=ny, resolution=resolution, thickness=thickness, delta=delta, atten_len=atten_len)
+    op_D = srwlib.SRWLOptD(4.81)
 
+    #pp = []
+    #pp.append([0, 0, 1.0, 0, 0, 1.0, 1.0, 1.0, 1.0])
+    #pp.append([0, 0, 1.0, 0, 0, 1.0, 4.0, 1.0, 4.0])
+    #return srwlib.SRWLOptC(el, pp)
+	
+    pp_S = [0, 0, 1.0, 0, 0, 1.0, 2.0, 1.0, 2.0]
+    pp_D = [0, 0, 1.0, 3, 0, 1.0, 1.0, 1.0, 1.0]
+	
+    #Wavefront Propagation Parameters:
+    #[0]: Auto-Resize (1) or not (0) Before propagation
+    #[1]: Auto-Resize (1) or not (0) After propagation
+    #[2]: Relative Precision for propagation with Auto-Resizing (1. is nominal)
+    #[3]: Allow (1) or not (0) for semi-analytical treatment of the quadratic (leading) phase terms at the propagation
+    #[4]: Do any Resizing on Fourier side, using FFT, (1) or not (0)
+    #[5]: Horizontal Range modification factor at Resizing (1. means no modification)
+    #[6]: Horizontal Resolution modification factor at Resizing
+    #[7]: Vertical Range modification factor at Resizing
+    #[8]: Vertical Resolution modification factor at Resizing
+    #[9]: Type of wavefront Shift before Resizing (not yet implemented)
+    #[10]: New Horizontal wavefront Center position after Shift (not yet implemented)
+    #[11]: New Vertical wavefront Center position after Shift (not yet implemented)
+	
+    return srwlib.SRWLOptC([op_S, op_D], [pp_S, pp_D])
+    #return srwlib.SRWLOptC([op_S], [pp_S])
 
 varParam = srwl_bl.srwl_uti_ext_options([
     ['name', 's', 'Mask example', 'simulation name'],
@@ -64,12 +88,15 @@ varParam = srwl_bl.srwl_uti_ext_options([
     ['gbm_z', 'f', 0.0, 'average longitudinal coordinate of waist [m]'],
     ['gbm_xp', 'f', 0.0, 'average horizontal angle at waist [rad]'],
     ['gbm_yp', 'f', 0.0, 'average verical angle at waist [rad]'],
-    ['gbm_ave', 'f', 9000.0, 'average photon energy [eV]'],
+    ['gbm_ave', 'f', 9646, 'average photon energy [eV]'],
     ['gbm_pen', 'f', 0.001, 'energy per pulse [J]'],
     ['gbm_rep', 'f', 1, 'rep. rate [Hz]'],
     ['gbm_pol', 'f', 1, 'polarization 1- lin. hor., 2- lin. vert., 3- lin. 45 deg., 4- lin.135 deg., 5- circ. right, 6- circ. left'],
     ['gbm_sx', 'f', 3e-06, 'rms beam size vs horizontal position [m] at waist (for intensity)'],
     ['gbm_sy', 'f', 3e-06, 'rms beam size vs vertical position [m] at waist (for intensity)'],
+    #['gbm_sx', 'f', 50e-06, 'rms beam size vs horizontal position [m] at waist (for intensity)'],
+    #['gbm_sy', 'f', 50e-06, 'rms beam size vs vertical position [m] at waist (for intensity)'],
+    
     ['gbm_st', 'f', 1e-13, 'rms pulse duration [s] (for intensity)'],
     ['gbm_mx', 'f', 0, 'transverse Gauss-Hermite mode order in horizontal direction'],
     ['gbm_my', 'f', 0, 'transverse Gauss-Hermite mode order in vertical direction'],
@@ -153,16 +180,24 @@ varParam = srwl_bl.srwl_uti_ext_options([
     #Multi-Electron (partially-coherent) Wavefront Propagation
     ['wm', '', '', 'calculate multi-electron (/ partially coherent) wavefront propagation', 'store_true'],
 
-    ['w_e', 'f', 9000.0, 'photon energy [eV] for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_e', 'f', 9646, 'photon energy [eV] for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_ef', 'f', -1., 'final photon energy [eV] for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_ne', 'i', 1, 'number of points vs photon energy for calculation of intensity distribution'],
     ['w_x', 'f', 0.0, 'central horizontal position [m] for calculation of intensity distribution'],
-    ['w_rx', 'f', 0.0005, 'range of horizontal position [m] for calculation of intensity distribution'],
+    #['w_rx', 'f', 0.0005, 'range of horizontal position [m] for calculation of intensity distribution'],
+    #['w_rx', 'f', 0.0008, 'range of horizontal position [m] for calculation of intensity distribution'],
+    ['w_rx', 'f', 20e-06, 'range of horizontal position [m] for calculation of intensity distribution'],
+
     ['w_nx', 'i', 2048, 'number of points vs horizontal position for calculation of intensity distribution'],
     ['w_y', 'f', 0.0, 'central vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
-    ['w_ry', 'f', 0.0005, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
+    #['w_ry', 'f', 0.0005, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
+    #['w_ry', 'f', 0.0008, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_ry', 'f', 20e-06, 'range of vertical position [m] for calculation of intensity distribution vs horizontal and vertical position'],
+
     ['w_ny', 'i', 2048, 'number of points vs vertical position for calculation of intensity distribution'],
-    ['w_smpf', 'f', 3.0, 'sampling factor for calculation of intensity distribution vs horizontal and vertical position'],
+    #['w_smpf', 'f', 3.0, 'sampling factor for calculation of intensity distribution vs horizontal and vertical position'],
+    ['w_smpf', 'f', -1, 'sampling factor for calculation of intensity distribution vs horizontal and vertical position'],
+    
     ['w_meth', 'i', 2, 'method to use for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_prec', 'f', 0.01, 'relative precision for calculation of intensity distribution vs horizontal and vertical position'],
     ['w_u', 'i', 1, 'electric field units: 0- arbitrary, 1- sqrt(Phot/s/0.1%bw/mm^2), 2- sqrt(J/eV/mm^2) or sqrt(W/mm^2), depending on representation (freq. or time)'],
@@ -187,7 +222,8 @@ varParam = srwl_bl.srwl_uti_ext_options([
     ['wm_fni', 's', 'res_int_pr_me.dat', 'file name for saving propagated multi-e intensity distribution vs horizontal and vertical position'],
 
     #to add options
-    ['op_r', 'f', 30.0, 'longitudinal position of the first optical element [m]'],
+    #['op_r', 'f', 30.0, 'longitudinal position of the first optical element [m]'],
+    ['op_r', 'f', 1.0, 'longitudinal position of the first optical element [m]'],
 
     # Former appParam:
     ['source_type', 's', 'g', 'source type, (u) idealized undulator, (t), tabulated undulator, (m) multipole, (g) gaussian beam'],
