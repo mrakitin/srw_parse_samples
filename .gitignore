@@ -91,4 +91,4 @@ ENV/
 .ropeproject
 
 .idea/
-data_samples/
+data_example_SampleCFN_01/
