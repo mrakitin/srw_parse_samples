@@ -4,8 +4,8 @@ import os
 import json
 import srwl_bl
 import srwlib
-import srwlpy
 import srwl_samples
+import uti_io
 
 example_folder = 'data_example_SampleCFN_01'  # example data sub-folder name
 if not os.path.isdir(example_folder):
@@ -42,7 +42,7 @@ def set_optics(v=None):
     tiff_name = 'R5.tif'
     tiff_path = os.path.join(example_folder, tiff_name)
 
-    d = srwl_samples.read_image(tiff_path, show_images=False)
+    d = uti_io.read_image(tiff_path, show_images=False)
 
     # SRW part:
     nx = d['data'].shape[0]
@@ -56,7 +56,7 @@ def set_optics(v=None):
     delta = 3.23075074E-05  # for Au at 9646 eV
     atten_len = 4.06544e-6  # [m] for Au at 9646 eV
 
-    op_S = srwl_samples.srwl_opt_setup_sample(image_data=d['data'], limit_value=d['limit_value'], nx=nx, ny=ny,
+    op_S = srwl_samples.srwl_opt_setup_transmission_from_image(image_data=d['data'], limit_value=d['limit_value'], nx=nx, ny=ny,
                                               resolution=resolution, thickness=thickness, delta=delta,
                                               atten_len=atten_len)
     op_D = srwlib.SRWLOptD(4.81)
