@@ -5,7 +5,6 @@ import json
 import srwl_bl
 import srwlib
 import srwl_samples
-import uti_io
 
 example_folder = 'data_example_SampleCFN_01'  # example data sub-folder name
 if not os.path.isdir(example_folder):
@@ -38,27 +37,15 @@ def set_optics(v=None):
     resolutions_file = os.path.join(example_folder, 'resolutions.json')
     with open(resolutions_file, 'r') as f:
         resolutions = json.load(f)
-
-    tiff_name = 'R5.tif'
-    tiff_path = os.path.join(example_folder, tiff_name)
-
-    d = uti_io.read_image(tiff_path, show_images=False)
-
-    # SRW part:
-    nx = d['data'].shape[0]
-    ny = d['data'].shape[1]
-    resolution = resolutions[tiff_name] * 1e-9  # [m/pixel]
-    # thickness = 100e-9
-    # thickness = 1e-6
-    thickness = 10e-6  # [m]
-    # thickness = 50e-6  # [m]
-    # material = 'Au'
-    delta = 3.23075074E-05  # for Au at 9646 eV
-    atten_len = 4.06544e-6  # [m] for Au at 9646 eV
-
-    op_S = srwl_samples.srwl_opt_setup_transmission_from_image(image_data=d['data'], limit_value=d['limit_value'], nx=nx, ny=ny,
-                                              resolution=resolution, thickness=thickness, delta=delta,
-                                              atten_len=atten_len)
+    image_name = 'R5.tif'
+    image_path = os.path.join(example_folder, image_name)
+    op_S = srwl_samples.srwl_opt_setup_transmission_from_image(
+        image_path=image_path,
+        resolution=resolutions[image_name] * 1e-9,
+        thickness=10e-6,  # [m]
+        delta=3.23075074E-05,  # for Au at 9646 eV,
+        atten_len=4.06544e-6,  # [m] for Au at 9646 eV
+    )
     op_D = srwlib.SRWLOptD(4.81)
     el.append(op_S)
     # TODO: Uncomment here if you wish to look at the diffraction:
