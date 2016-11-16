@@ -17,16 +17,14 @@ import srwl_samples
 def set_optics(v=None):
     el = []
     el.append(srwl_samples.srwl_opt_setup_transmission_from_file(
-                  file_path=v.op_sample1['file'],
-                  resolution=2.480469e-09,
-                  # resolution=2.480469e-09 * 3,
-                  thickness=1e-05,
-                  delta=3.738856e-05,
-                  atten_len=3.38902e-06,
-                  input_type=v.op_sample1['type'],
-                  is_save_images=True,
-                  prefix='op_sample1',
-    ))
+                    file_path=v.op_sample1['file'],
+                    resolution=2.480469e-09,
+                    thickness=1e-05,
+                    delta=3.738856e-05,
+                    atten_len=3.38902e-06,
+                    input_type=v.op_sample1['type'],
+                    is_save_images=True,
+                    prefix='op_sample1'))
 
     pp = []
     pp.append([0, 0, 1.0, 0, 0, 1.0, 100.0, 1.0, 100.0])
@@ -203,9 +201,7 @@ varParam = srwl_bl.srwl_uti_ext_options([
     ['wm_fni', 's', 'res_int_pr_me.dat', 'file name for saving propagated multi-e intensity distribution vs horizontal and vertical position'],
 
     # Beamline optics:
-    ['op_sample1', 's', {'file': 'data_example_SampleCFN_01/R5.tif', 'type': 'image'}, 'image file of the sample #1'],
-    # ['op_sample1', 's', {'file': 'data_example_SampleCFN_01/0800-5rings.tif', 'type': 'image'}, 'image file of the sample #1'],
-    # ['op_sample1', 's', {'file': 'data_example_SampleCFN_01/5rings.npy', 'type': 'npy'}, 'NumPy file of the sample #1'],
+    ['op_sample1', 's', {'file': '5rings.npy', 'type': 'npy'}, 'npy file of the sample #1'],
 
     #to add options
     ['op_r', 'f', 20.0, 'longitudinal position of the first optical element [m]'],
