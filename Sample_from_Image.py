@@ -11,12 +11,12 @@ except:
 import srwl_bl
 import srwlib
 import srwlpy
-import srwl_samples
+import srwl_smp
 
 
 def set_optics(v=None):
     el = []
-    el.append(srwl_samples.srwl_opt_setup_transmission_from_file(
+    el.append(srwl_smp.srwl_opt_setup_transmission_from_file(
                     file_path=v.op_sample1,
                     resolution=2.480469e-09,
                     thickness=1e-05,
@@ -200,7 +200,11 @@ varParam = srwl_bl.srwl_uti_ext_options([
     ['wm_fni', 's', 'res_int_pr_me.dat', 'file name for saving propagated multi-e intensity distribution vs horizontal and vertical position'],
 
     # Beamline optics:
-    ['op_sample1', 's', 'data_example_SampleCFN_01/R5.tif',          'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.tif',          'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.png',          'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.bmp',          'input file of the sample #1'],
+    ['op_sample1', 's', 'data_example_SampleCFN_01/R5.gif',          'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.jpg',          'input file of the sample #1'],  # JPEG file is not read correctly, need to address it later
     # ['op_sample1', 's', 'data_example_SampleCFN_01/0800-5rings.tif', 'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/5rings.npy',      'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/5rings.npz',      'input file of the sample #1'],
