@@ -201,6 +201,7 @@ varParam = srwl_bl.srwl_uti_ext_options([
 
     # Beamline optics:
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.tif',          'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/H5.tif',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.png',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.bmp',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.gif',          'input file of the sample #1'],
