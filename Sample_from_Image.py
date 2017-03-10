@@ -204,12 +204,13 @@ varParam = srwl_bl.srwl_uti_ext_options([
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.png',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.bmp',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.gif',          'input file of the sample #1'],
-    ['op_sample1', 's', 'data_example_SampleCFN_01/R5.jpg',          'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.jpg',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/0800-5rings.tif', 'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/5rings.npy',      'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/5rings.npz',      'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.TIF',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/0894-roughdisc.tif', 'input file of the sample #1'],
+    ['op_sample1', 's', 'data_example_SampleCFN_01/r5_part.tif',      'input file of the sample #1'],
 
     #to add options
     ['op_r', 'f', 20.0, 'longitudinal position of the first optical element [m]'],
