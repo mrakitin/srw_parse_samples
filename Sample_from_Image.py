@@ -18,18 +18,38 @@ def set_optics(v=None):
     el = []
     el.append(srwl_uti_smp.srwl_opt_setup_transm_from_file(
                     file_path=v.op_sample1,
-                    resolution=2.480469e-09,
+                    resolution=3.96825e-09,  # nm/pixel
+                    # resolution=0.3*4.950495e-9,  # nm/pixel
                     thickness=1e-05,
                     delta=3.738856e-05,
                     atten_len=3.38902e-06,
+                    # area=(510, 800, 395, 600),
+                    area=(688, 688+378, 273, 273+390),
+                    # area=(0, 1280, 0, 834),
+                    rotate_angle=-30,
+                    # rotate_angle=0,
+                    # rotate_reshape=False,  # denser objects
+                    rotate_reshape=True,  # sparser objects
+                    cutoff_background_noise=0.45,
+                    # background_color=100,
+                    background_color=0,
+                    invert=False,
+                    # invert=True,
+                    tile=(2, 3),
+                    # tile=(2, 1),
+                    # tile=None,
+                    shift_x=-50,
+                    shift_y=-50,
                     is_save_images=True,
-                    prefix='op_sample1'))
+                    prefix='op_sample1',
+                    output_image_format=None,
+    ))
 
     pp = []
-    pp.append([0, 0, 1.0, 0, 0, 1.0, 100.0, 1.0, 100.0])
+    pp.append([0, 0, 1.0, 0, 0, 1.0, 150.0, 1.0, 150.0])
 
 
-    pp.append([0, 0, 1.0, 0, 0, 0.005, 20.0, 0.005, 20.0])
+    pp.append([0, 0, 1.0, 0, 0, 0.01, 20.0, 0.01, 20.0])
     return srwlib.SRWLOptC(el, pp)
 
 
@@ -211,7 +231,10 @@ varParam = srwl_bl.srwl_uti_ext_options([
     # ['op_sample1', 's', 'data_example_SampleCFN_01/5rings.npz',      'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/R5.TIF',          'input file of the sample #1'],
     # ['op_sample1', 's', 'data_example_SampleCFN_01/0894-roughdisc.tif', 'input file of the sample #1'],
-    ['op_sample1', 's', 'data_example_SampleCFN_01/r5_part.tif',      'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/r5_part.tif',      'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/H5R5.tif',      'input file of the sample #1'],
+    ['op_sample1', 's', 'data_example_SampleCFN_01/H5R5.png',      'input file of the sample #1'],
+    # ['op_sample1', 's', 'data_example_SampleCFN_01/Au_nanodots_testsmp/CHX - random - test1_q04.tif',      'input file of the sample #1'],
 
     #to add options
     ['op_r', 'f', 20.0, 'longitudinal position of the first optical element [m]'],
